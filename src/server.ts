@@ -13,36 +13,29 @@ import {
 
 import { registerUser } from "./routes/register-user";
 
-import { env } from "./env";
+import { env } from "./env/env";
+import { authenticateWithPassword } from './routes/auth-user';
+import { createTestimony } from './routes/create-testimony';
+import { getTestimony } from './routes/get-testimony';
 
+const app = fastify().withTypeProvider<ZodTypeProvider>()
 
-const app = fastify().withTypeProvider<ZodTypeProvider>();
-
-app.setSerializerCompiler(serializerCompiler);
-app.setValidatorCompiler(validatorCompiler);
-
-app.register(fastifyCors)
-
-app.register(fastifyJwt, {
-  secret: env.JWT_SECRET,
-})
+app.setSerializerCompiler(serializerCompiler)
+app.setValidatorCompiler(validatorCompiler)
 
 app.register(fastifySwagger, {
   openapi: {
     info: {
-      title: 'NextJS SaaS API',
-      description:
-        'Full-stack SaaS with multi-tenant & RBAC API documentation.',
+      title: 'Next.js SaaS',
+      description: 'Full-stack SaaS with multi-tenant & RBAC.',
       version: '1.0.0',
     },
-    servers: [],
     components: {
       securitySchemes: {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'JWT obtained from the authentication route.',
         },
       },
     },
@@ -54,7 +47,17 @@ app.register(fastifySwaggerUI, {
   routePrefix: '/docs',
 })
 
+app.register(fastifyJwt, {
+  secret: env.JWT_SECRET,
+})
+
+app.register(fastifyCors)
+
 app.register(registerUser);
+app.register(authenticateWithPassword);
+
+app.register(createTestimony);
+app.register(getTestimony);
 
 app.listen({ port: env.PORT, host: '0.0.0.0' }).then(() => {
   console.log(`HTTP Server listening port: ${env.PORT} `);

@@ -14,11 +14,21 @@ datasource db {
 }
 
 model users {
-  id          String   @id @default(uuid())
-  firstMame   String
-  lastName    String
-  email       String   @unique
-  password    String
-  cellphone   String
-  dateOfBirth DateTime
+  id           String      @id @default(uuid())
+  firstMame    String
+  lastName     String
+  email        String      @unique
+  passwordHash String
+  cellphone    String
+  dateOfBirth  DateTime
+  testimony    testimony[]
+}
+
+model testimony {
+  id        String   @id @default(uuid())
+  content   String
+  authorId  String
+  createdAt DateTime @default(now())
+
+  User users @relation(fields: [authorId], references: [id])
 }
