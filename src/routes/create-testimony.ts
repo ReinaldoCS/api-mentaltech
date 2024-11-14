@@ -16,31 +16,25 @@ export async function createTestimony(app: FastifyInstance) {
           summary: "Create a testimony",
           security: [{ bearerAuth: [] }],
           body: z.object({
-            content: z.string()
+            tasks: z.array(z.string())
           }),
           response: {
-            201: z.object({
-              testimonyId: z.string()
-            })
+            201: z.null()
           }
         },
       },
       async (request, reply) => {
-        const { content } = request.body;
+        const { tasks } = request.body;
         const sub = await request.getCurrentUserId();
 
-        const testimony = await prisma.testimony.create({
-          data: {
-            content,
-            User: {
-              connect: {
-                id: sub,
-              },
-            }
-          }
-        })
+      await prisma.testimony.createMany({
+        data: tasks.map(task => ({
+          content: task,
+          authorId: sub
+        })),
+      })
 
-        return reply.status(201).send({ testimonyId: testimony.id });
+        return reply.status(201).send();
       }
     );
 }
